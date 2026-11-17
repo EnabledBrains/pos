@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Personal OS</title>
+<style>
+  :root { --bg: #f6f5f2; --fg: #1d1d1b; --muted: #6b6a66; --accent: #2f5d50; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #151514; --fg: #ecebe7; --muted: #a3a29d; --accent: #8cc4b2; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--fg); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { width: 100%; max-width: 26rem; padding: 1.5rem 1rem; }
+  h1 { font-size: 1.25rem; margin: 0 0 .5rem; }
+  p { margin: 0 0 1rem; line-height: 1.5; color: var(--muted); }
+  a { color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Personal OS</h1>
+  <p id="status">Opening…</p>
+  <p><a id="go" href="./" hidden>Open Personal OS</a></p>
+</main>
+<script>
+  // Fixed address for a private app that runs on its owner's laptop behind a Cloudflare tunnel.
+  // The laptop writes the tunnel's current address to tunnel.json whenever it changes.
+  (async () => {
+    const status = document.getElementById("status");
+    const go = document.getElementById("go");
+    const site = location.pathname.split("/")[1] || "";
+    let rest = location.pathname.slice(site ? site.length + 1 : 0) || "/";
+    if (rest === "/index.html" || rest === "/404.html") rest = "/";
+    try {
+      const response = await fetch(`/${site}/tunnel.json?t=${Date.now()}`, { cache: "no-store" });
+      const data = await response.json();
+      if (!/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(data.url || "")) throw new Error("no address");
+      const target = data.url + rest + location.search + location.hash;
+      go.href = target;
+      go.hidden = false;
+      location.replace(target);
+    } catch {
+      status.textContent = "Personal OS is offline right now. It reconnects on its own when the laptop is on; try again in a minute.";
+    }
+  })();
+</script>
+</body>
+</html>
