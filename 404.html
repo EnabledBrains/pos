@@ -24,25 +24,17 @@
   <p><a id="go" href="./" hidden>Open Personal OS</a></p>
 </main>
 <script>
-  // Fixed address for a private app that runs on its owner's laptop behind a Cloudflare tunnel.
-  // The laptop writes the tunnel's current address to tunnel.json whenever it changes.
-  (async () => {
-    const status = document.getElementById("status");
-    const go = document.getElementById("go");
+  // Fixed address for a private app that runs on its owner's laptop. The Cloudflare Worker at
+  // pos.dev-enabledbrains.workers.dev forwards to the laptop's current tunnel (listed in tunnel.json),
+  // so this page only needs to send visitors there, keeping the path.
+  (() => {
     const site = location.pathname.split("/")[1] || "";
     let rest = location.pathname.slice(site ? site.length + 1 : 0) || "/";
     if (rest === "/index.html" || rest === "/404.html") rest = "/";
-    try {
-      const response = await fetch(`/${site}/tunnel.json?t=${Date.now()}`, { cache: "no-store" });
-      const data = await response.json();
-      if (!/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(data.url || "")) throw new Error("no address");
-      const target = data.url + rest + location.search + location.hash;
-      go.href = target;
-      go.hidden = false;
-      location.replace(target);
-    } catch {
-      status.textContent = "Personal OS is offline right now. It reconnects on its own when the laptop is on; try again in a minute.";
-    }
+    const target = "https://pos.dev-enabledbrains.workers.dev" + rest + location.search + location.hash;
+    document.getElementById("go").href = target;
+    document.getElementById("go").hidden = false;
+    location.replace(target);
   })();
 </script>
 </body>
